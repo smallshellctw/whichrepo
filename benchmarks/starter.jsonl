@@ -8,16 +8,6 @@
 {"task":"Support partial refunds in the payments API","expected_projects":["payments-api"]}
 {"task":"Add webhook delivery metrics to checkout","expected_projects":["payments-api"]}
 {"task":"Reject duplicate payment callback events","expected_projects":["payments-api"]}
-{"task":"Change the checkout payment timeout","expected_projects":["payments-api"]}
-{"task":"Document the payment webhook contract","expected_projects":["payments-api"]}
-{"task":"Add a health endpoint for checkout payments","expected_projects":["payments-api"]}
-{"task":"Persist webhook request identifiers","expected_projects":["payments-api"]}
-{"task":"Validate refund currency codes","expected_projects":["payments-api"]}
-{"task":"Rate limit incoming checkout webhooks","expected_projects":["payments-api"]}
-{"task":"Add tracing around payment processing","expected_projects":["payments-api"]}
-{"task":"Handle malformed webhook payloads","expected_projects":["payments-api"]}
-{"task":"Expose checkout retry policy","expected_projects":["payments-api"]}
-{"task":"Fix payment webhook response codes","expected_projects":["payments-api"]}
 {"task":"Retry failed webhook jobs with backoff","expected_projects":["webhook-worker"]}
 {"task":"Limit concurrent webhook worker jobs","expected_projects":["webhook-worker"]}
 {"task":"Add dead letter handling for webhook jobs","expected_projects":["webhook-worker"]}
@@ -28,36 +18,6 @@
 {"task":"Add queue lag metrics to webhook processing","expected_projects":["webhook-worker"]}
 {"task":"Prioritize urgent webhook jobs","expected_projects":["webhook-worker"]}
 {"task":"Make webhook job processing idempotent","expected_projects":["webhook-worker"]}
-{"task":"Add a webhook worker readiness check","expected_projects":["webhook-worker"]}
-{"task":"Reduce webhook worker polling interval","expected_projects":["webhook-worker"]}
-{"task":"Persist failed webhook job reasons","expected_projects":["webhook-worker"]}
-{"task":"Add exponential backoff to the job processor","expected_projects":["webhook-worker"]}
-{"task":"Fix duplicate webhook worker execution","expected_projects":["webhook-worker"]}
-{"task":"Scale webhook consumers by queue depth","expected_projects":["webhook-worker"]}
-{"task":"Add graceful retry cancellation","expected_projects":["webhook-worker"]}
-{"task":"Trace webhook jobs across attempts","expected_projects":["webhook-worker"]}
-{"task":"Configure a maximum job age","expected_projects":["webhook-worker"]}
-{"task":"Batch webhook retry scheduling","expected_projects":["webhook-worker"]}
-{"task":"Add maxAttempts to the shared retry policy","expected_projects":["shared-libs"]}
-{"task":"Define a common webhook event schema","expected_projects":["shared-libs"]}
-{"task":"Export shared checkout types","expected_projects":["shared-libs"]}
-{"task":"Add backoffMs to retry utilities","expected_projects":["shared-libs"]}
-{"task":"Version the shared payment schema","expected_projects":["shared-libs"]}
-{"task":"Add common error codes for checkout","expected_projects":["shared-libs"]}
-{"task":"Publish retry policy type definitions","expected_projects":["shared-libs"]}
-{"task":"Add validation helpers for webhook schemas","expected_projects":["shared-libs"]}
-{"task":"Create shared payment identifiers","expected_projects":["shared-libs"]}
-{"task":"Deprecate an old retry utility","expected_projects":["shared-libs"]}
-{"task":"Add a shared currency enum","expected_projects":["shared-libs"]}
-{"task":"Document common checkout types","expected_projects":["shared-libs"]}
-{"task":"Export webhook signature interfaces","expected_projects":["shared-libs"]}
-{"task":"Add shared duration parsing","expected_projects":["shared-libs"]}
-{"task":"Create a reusable retry result type","expected_projects":["shared-libs"]}
-{"task":"Add tests for retry policy serialization","expected_projects":["shared-libs"]}
-{"task":"Normalize shared webhook timestamps","expected_projects":["shared-libs"]}
-{"task":"Add common event metadata","expected_projects":["shared-libs"]}
-{"task":"Split payment types from retry types","expected_projects":["shared-libs"]}
-{"task":"Add a shared backoff calculator","expected_projects":["shared-libs"]}
 {"task":"Show payment retry status in checkout UI","expected_projects":["frontend-app"]}
 {"task":"Add a loading state to checkout submission","expected_projects":["frontend-app"]}
 {"task":"Display refund status to customers","expected_projects":["frontend-app"]}
@@ -68,33 +28,73 @@
 {"task":"Add retry guidance to the checkout UI","expected_projects":["frontend-app"]}
 {"task":"Support a new payment method in frontend","expected_projects":["frontend-app"]}
 {"task":"Make checkout responsive on mobile","expected_projects":["frontend-app"]}
-{"task":"Add an order confirmation screen","expected_projects":["frontend-app"]}
-{"task":"Show webhook processing state to operators","expected_projects":["frontend-app"]}
-{"task":"Improve checkout accessibility labels","expected_projects":["frontend-app"]}
-{"task":"Add optimistic payment status updates","expected_projects":["frontend-app"]}
-{"task":"Fix stale checkout totals","expected_projects":["frontend-app"]}
-{"task":"Add frontend telemetry opt-out","expected_projects":["frontend-app"]}
-{"task":"Render payment errors consistently","expected_projects":["frontend-app"]}
-{"task":"Add checkout localization strings","expected_projects":["frontend-app"]}
-{"task":"Update the checkout API client","expected_projects":["frontend-app"]}
-{"task":"Add keyboard navigation to payment methods","expected_projects":["frontend-app"]}
-{"task":"Increase payments-api replicas","expected_projects":["infra"]}
-{"task":"Add Kubernetes limits for webhook workers","expected_projects":["infra"]}
-{"task":"Configure checkout service autoscaling","expected_projects":["infra"]}
-{"task":"Add a deployment health check","expected_projects":["infra"]}
-{"task":"Rotate payment service configuration","expected_projects":["infra"]}
-{"task":"Create a webhook worker deployment","expected_projects":["infra"]}
-{"task":"Add network policy for payments","expected_projects":["infra"]}
-{"task":"Set retry worker resource requests","expected_projects":["infra"]}
-{"task":"Configure payment service disruption budget","expected_projects":["infra"]}
-{"task":"Add checkout environment variables","expected_projects":["infra"]}
-{"task":"Update Kubernetes payment labels","expected_projects":["infra"]}
-{"task":"Add production ingress for checkout","expected_projects":["infra"]}
-{"task":"Configure webhook worker secrets","expected_projects":["infra"]}
-{"task":"Add staging deployment overlays","expected_projects":["infra"]}
-{"task":"Tune payment service readiness probes","expected_projects":["infra"]}
-{"task":"Add deployment rollback settings","expected_projects":["infra"]}
-{"task":"Create service monitors for payments","expected_projects":["infra"]}
-{"task":"Pin the checkout container image","expected_projects":["infra"]}
-{"task":"Add webhook worker pod affinity","expected_projects":["infra"]}
-{"task":"Document the deployment configuration","expected_projects":["infra"]}
+{"task":"Add maxAttempts to the shared retry policy","expected_projects":["shared-libs"]}
+{"task":"Define a common webhook event schema","expected_projects":["shared-libs"]}
+{"task":"Export shared checkout types","expected_projects":["shared-libs"]}
+{"task":"Add backoffMs to retry utilities","expected_projects":["shared-libs"]}
+{"task":"Version the shared payment schema","expected_projects":["shared-libs"]}
+{"task":"Add common error codes for checkout","expected_projects":["shared-libs"]}
+{"task":"Publish retry policy type definitions","expected_projects":["shared-libs"]}
+{"task":"Add validation helpers for webhook schemas","expected_projects":["shared-libs"]}
+{"task":"Create shared payment identifiers","expected_projects":["shared-libs"]}
+{"task":"Add a shared currency enum","expected_projects":["shared-libs"]}
+{"task":"Adjust fraud score for country mismatch","expected_projects":["fraud-model"]}
+{"task":"Add a Python anomaly model for payment risk","expected_projects":["fraud-model"]}
+{"task":"Expose fraud scoring through FastAPI","expected_projects":["fraud-model"]}
+{"task":"Add device velocity to risk scoring","expected_projects":["fraud-model"]}
+{"task":"Retrain the checkout fraud model","expected_projects":["fraud-model"]}
+{"task":"Log explanations for rejected risk scores","expected_projects":["fraud-model"]}
+{"task":"Add merchant features to payment fraud detection","expected_projects":["fraud-model"]}
+{"task":"Calibrate anomaly thresholds for card payments","expected_projects":["fraud-model"]}
+{"task":"Add tests for Python risk scoring","expected_projects":["fraud-model"]}
+{"task":"Version the fraud model features","expected_projects":["fraud-model"]}
+{"task":"Reconcile settled payments into ledger entries","expected_projects":["ledger-service"]}
+{"task":"Add a Spring endpoint for journal balances","expected_projects":["ledger-service"]}
+{"task":"Fix duplicate ledger reconciliation","expected_projects":["ledger-service"]}
+{"task":"Add Maven dependency for accounting contracts","expected_projects":["ledger-service"]}
+{"task":"Post partial refunds to the ledger","expected_projects":["ledger-service"]}
+{"task":"Create daily reconciliation reports","expected_projects":["ledger-service"]}
+{"task":"Add ledger entry validation in Java","expected_projects":["ledger-service"]}
+{"task":"Record payment settlement journal IDs","expected_projects":["ledger-service"]}
+{"task":"Improve reconciliation job tracing","expected_projects":["ledger-service"]}
+{"task":"Handle unbalanced journal entries","expected_projects":["ledger-service"]}
+{"task":"Route webhook events by tenant","expected_projects":["event-router"]}
+{"task":"Add a Rust event delivery policy","expected_projects":["event-router"]}
+{"task":"Prevent duplicate event bus delivery","expected_projects":["event-router"]}
+{"task":"Add serde fields to routed events","expected_projects":["event-router"]}
+{"task":"Partition event routing by merchant","expected_projects":["event-router"]}
+{"task":"Add backpressure to the Rust event service","expected_projects":["event-router"]}
+{"task":"Trace event routing latency","expected_projects":["event-router"]}
+{"task":"Add failed delivery handling to the event bus","expected_projects":["event-router"]}
+{"task":"Support a new event destination","expected_projects":["event-router"]}
+{"task":"Benchmark Rust event routing","expected_projects":["event-router"]}
+{"task":"Add invoice PDF status to the billing API","expected_projects":["billing-api"]}
+{"task":"Fix subscription renewal billing","expected_projects":["billing-api"]}
+{"task":"Add a C# endpoint for overdue invoices","expected_projects":["billing-api"]}
+{"task":"Calculate prorated subscription charges","expected_projects":["billing-api"]}
+{"task":"Add .NET billing contract tests","expected_projects":["billing-api"]}
+{"task":"Expose invoice line items","expected_projects":["billing-api"]}
+{"task":"Cancel a subscription at period end","expected_projects":["billing-api"]}
+{"task":"Add billing API pagination","expected_projects":["billing-api"]}
+{"task":"Validate invoice currency in C#","expected_projects":["billing-api"]}
+{"task":"Link payment receipts to invoices","expected_projects":["billing-api","payments-api"]}
+{"task":"Add regional prices to the product catalog","expected_projects":["catalog-service"]}
+{"task":"Fix PHP catalog price rounding","expected_projects":["catalog-service"]}
+{"task":"Add product availability filters","expected_projects":["catalog-service"]}
+{"task":"Cache catalog pricing responses","expected_projects":["catalog-service"]}
+{"task":"Add Composer contracts to product pricing","expected_projects":["catalog-service"]}
+{"task":"Support catalog bundles","expected_projects":["catalog-service"]}
+{"task":"Add a PHP endpoint for SKU lookup","expected_projects":["catalog-service"]}
+{"task":"Validate product currency rules","expected_projects":["catalog-service"]}
+{"task":"Add catalog price audit history","expected_projects":["catalog-service"]}
+{"task":"Improve product search aliases","expected_projects":["catalog-service"]}
+{"task":"Send Ruby alerts for failed webhooks","expected_projects":["notification-service"]}
+{"task":"Add email templates for payment notifications","expected_projects":["notification-service"]}
+{"task":"Retry notification delivery","expected_projects":["notification-service"]}
+{"task":"Add an alert for repeated callback failures","expected_projects":["notification-service"]}
+{"task":"Configure webhook worker gem integration","expected_projects":["notification-service"]}
+{"task":"Add notification delivery metrics","expected_projects":["notification-service"]}
+{"task":"Localize invoice email alerts","expected_projects":["notification-service"]}
+{"task":"Add Slack notification routing","expected_projects":["notification-service"]}
+{"task":"Suppress duplicate customer alerts","expected_projects":["notification-service"]}
+{"task":"Test Ruby notification templates","expected_projects":["notification-service"]}

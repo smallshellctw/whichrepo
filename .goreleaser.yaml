@@ -6,10 +6,23 @@ builds:
     env: [CGO_ENABLED=0]
     goos: [darwin, linux, windows]
     goarch: [amd64, arm64]
+    tags:
+      - grammar_subset
+      - grammar_subset_go
+      - grammar_subset_javascript
+      - grammar_subset_typescript
+      - grammar_subset_tsx
+      - grammar_subset_python
+      - grammar_subset_java
+      - grammar_subset_rust
+      - grammar_subset_c_sharp
+      - grammar_subset_php
+      - grammar_subset_ruby
     flags: [-trimpath]
-    ldflags: [-s -w]
+    ldflags: ["-s -w -X main.version={{.Version}}"]
 archives:
   - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
         formats: [zip]

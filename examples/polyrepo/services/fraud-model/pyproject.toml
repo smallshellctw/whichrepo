@@ -1,0 +1,7 @@
+[project]
+name = "fraud-model"
+version = "0.1.0"
+dependencies = [
+  "shared-contracts>=1.0",
+  "fastapi>=0.115",
+]
