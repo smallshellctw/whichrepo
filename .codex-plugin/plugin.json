@@ -26,6 +26,7 @@
       "Find which services this bug likely affects.",
       "Show evidence before I start coding."
     ],
-    "brandColor": "#2FD3FF"
+    "brandColor": "#2FD3FF",
+    "screenshots": ["./assets/whichrepo-dashboard.png"]
   }
 }
