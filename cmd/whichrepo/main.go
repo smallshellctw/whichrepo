@@ -13,6 +13,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	publicanalyzer "github.com/smallshellctw/whichrepo/analyzer"
 	"github.com/smallshellctw/whichrepo/internal/config"
 	"github.com/smallshellctw/whichrepo/internal/dashboard"
 	"github.com/smallshellctw/whichrepo/internal/evaluation"
@@ -24,7 +25,7 @@ import (
 	"github.com/smallshellctw/whichrepo/internal/scanner"
 )
 
-const version = "0.1.0-dev"
+var version = "0.1.0-dev"
 
 type settings struct {
 	workspace  string
@@ -214,7 +215,20 @@ func runDoctor(ctx context.Context, args []string) error {
 	}
 	defer store.Close()
 	status := workspaceStatus(ctx, store, cfg)
-	return writeJSON(map[string]any{"version": version, "go": runtime.Version(), "os": runtime.GOOS, "arch": runtime.GOARCH, "workspace": status, "config": cfg.configPath, "database": cfg.dbPath, "provider_key_configured": newDecisionClient(cfg.provider).Available()})
+	return writeJSON(map[string]any{
+		"version":                 version,
+		"built_with_go":           runtime.Version(),
+		"runtime_dependencies":    []string{},
+		"cgo_required":            false,
+		"analyzer_api_version":    publicanalyzer.APIVersion,
+		"language_analyzers":      []string{"Go", "JavaScript", "TypeScript", "Python", "Java", "Rust", ".NET", "PHP", "Ruby"},
+		"os":                      runtime.GOOS,
+		"arch":                    runtime.GOARCH,
+		"workspace":               status,
+		"config":                  cfg.configPath,
+		"database":                cfg.dbPath,
+		"provider_key_configured": newDecisionClient(cfg.provider).Available(),
+	})
 }
 
 func runEval(ctx context.Context, args []string) error {

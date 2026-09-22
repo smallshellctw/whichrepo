@@ -7,6 +7,7 @@ type Project struct {
 	Path         string    `json:"path"`
 	Description  string    `json:"description"`
 	Aliases      []string  `json:"aliases,omitempty"`
+	Identifiers  []string  `json:"identifiers,omitempty"`
 	Languages    []string  `json:"languages,omitempty"`
 	Dependencies []string  `json:"dependencies,omitempty"`
 	Manifests    []string  `json:"manifests,omitempty"`

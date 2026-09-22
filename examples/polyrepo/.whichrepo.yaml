@@ -20,8 +20,32 @@ projects:
   shared-libs:
     path: packages/shared-libs
     description: Shared schemas and retry utilities
-    aliases: [shared retry, common types, schema, interfaces, utilities, enum]
+    aliases: [shared retry, shared-contracts, shared_contracts, commerce/shared-libs, common types, schema, interfaces, utilities, enum]
   infra:
     path: infra
     description: Deployment and runtime configuration
     aliases: [kubernetes, deployment, replicas, autoscaling, resources, ingress, pod, secrets, image, readiness, staging]
+  fraud-model:
+    path: services/fraud-model
+    description: Python fraud scoring and payment risk models
+    aliases: [fraud, risk model, scoring, anomaly, python service]
+  ledger-service:
+    path: services/ledger-service
+    description: Java ledger entries and payment reconciliation service
+    aliases: [ledger, reconciliation, spring, maven, journal]
+  event-router:
+    path: services/event-router
+    description: Rust event routing and delivery service
+    aliases: [event bus, event routing, rust service, delivery]
+  billing-api:
+    path: services/billing-api
+    description: .NET subscriptions, invoices, and billing API
+    aliases: [billing, invoice, subscription, dotnet, csharp]
+  catalog-service:
+    path: services/catalog-service
+    description: PHP product catalog and pricing service
+    aliases: [catalog, pricing, products, composer, php service]
+  notification-service:
+    path: services/notification-service
+    description: Ruby notification delivery and webhook alerts
+    aliases: [notifications, email, alerts, ruby service, gem]

@@ -3,7 +3,6 @@ package scanner
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/smallshellctw/whichrepo/internal/analyzer"
 	"github.com/smallshellctw/whichrepo/internal/config"
 	"github.com/smallshellctw/whichrepo/internal/model"
 )
@@ -37,9 +37,9 @@ var sensitiveNames = map[string]struct{}{
 
 var indexedExtensions = map[string]struct{}{
 	".go": {}, ".proto": {}, ".yaml": {}, ".yml": {}, ".json": {}, ".md": {},
-	".php": {}, ".js": {}, ".jsx": {}, ".ts": {}, ".tsx": {}, ".vue": {},
+	".php": {}, ".js": {}, ".jsx": {}, ".mjs": {}, ".cjs": {}, ".ts": {}, ".tsx": {}, ".mts": {}, ".cts": {}, ".vue": {},
 	".sql": {}, ".toml": {}, ".mod": {}, ".gradle": {}, ".xml": {}, ".py": {},
-	".rs": {}, ".java": {}, ".kt": {}, ".swift": {}, ".rb": {}, ".cs": {},
+	".rs": {}, ".java": {}, ".kt": {}, ".swift": {}, ".rb": {}, ".cs": {}, ".fs": {}, ".fsx": {}, ".vb": {},
 }
 
 type Scanner struct {
@@ -53,10 +53,11 @@ func (s Scanner) Scan() ([]model.Project, error) {
 		return nil, err
 	}
 	projects := make([]model.Project, 0, len(paths))
+	registry := analyzer.DefaultRegistry()
 	for _, path := range paths {
 		name := filepath.Base(path)
 		override := findOverride(s.Config.Projects, name, path, s.Root)
-		project, err := s.scanProject(name, path, override)
+		project, err := s.scanProject(name, path, override, registry)
 		if err != nil {
 			return nil, err
 		}
@@ -108,9 +109,30 @@ func (s Scanner) discoverProjects() ([]string, error) {
 			continue
 		}
 		path := filepath.Join(root, entry.Name())
-		if looksLikeProject(path) {
+		if included(entry.Name(), s.Config.Workspace.Include) && looksLikeProject(path) {
 			add(path)
 		}
+	}
+	if len(s.Config.Workspace.Include) > 0 {
+		_ = filepath.WalkDir(root, func(path string, entry os.DirEntry, walkErr error) error {
+			if walkErr != nil || path == root {
+				return nil
+			}
+			rel, _ := filepath.Rel(root, path)
+			rel = filepath.ToSlash(rel)
+			if entry.IsDir() {
+				if strings.HasPrefix(entry.Name(), ".") || isIgnoredDir(entry.Name()) || excluded(rel, s.Config.Workspace.Exclude) {
+					return filepath.SkipDir
+				}
+				if strings.Count(rel, "/") > 4 {
+					return filepath.SkipDir
+				}
+				if included(rel, s.Config.Workspace.Include) && looksLikeProject(path) {
+					add(path)
+				}
+			}
+			return nil
+		})
 	}
 
 	if rootIsProject && hasWorkspaceMarker(root) {
@@ -127,10 +149,10 @@ func (s Scanner) discoverProjects() ([]string, error) {
 				return filepath.SkipDir
 			}
 			if path != root {
-				if _, ignored := ignoredDirs[entry.Name()]; ignored {
+				if isIgnoredDir(entry.Name()) || excluded(filepath.ToSlash(rel), s.Config.Workspace.Exclude) {
 					return filepath.SkipDir
 				}
-				if hasManifest(path) {
+				if included(filepath.ToSlash(rel), s.Config.Workspace.Include) && hasManifest(path) {
 					add(path)
 				}
 			}
@@ -140,7 +162,7 @@ func (s Scanner) discoverProjects() ([]string, error) {
 	return sortedKeys(seen), nil
 }
 
-func (s Scanner) scanProject(name, path string, override config.ProjectOverride) (model.Project, error) {
+func (s Scanner) scanProject(name, path string, override config.ProjectOverride, registry analyzer.Registry) (model.Project, error) {
 	files := projectFiles(path)
 	if len(files) > maxFilesPerProject {
 		files = files[:maxFilesPerProject]
@@ -149,16 +171,13 @@ func (s Scanner) scanProject(name, path string, override config.ProjectOverride)
 	var totalBytes int
 	languages := map[string]struct{}{}
 	manifests := []string{}
+	identifiers := []string{}
 	rawDependencies := []string{}
 	for _, relativePath := range files {
 		if totalBytes >= maxBytesPerProject || !shouldIndex(relativePath) {
 			continue
 		}
 		filePath := filepath.Join(path, relativePath)
-		ext := strings.ToLower(filepath.Ext(relativePath))
-		if language := languageForExtension(ext); language != "" {
-			languages[language] = struct{}{}
-		}
 		data, err := readPrefix(filePath, maxBytesPerFile)
 		if err != nil || !utf8.Valid(data) {
 			continue
@@ -168,9 +187,18 @@ func (s Scanner) scanProject(name, path string, override config.ProjectOverride)
 		builder.WriteByte('\n')
 		builder.Write(data)
 		totalBytes += len(data)
-		if isManifest(filepath.Base(relativePath)) {
+		analysis := registry.Analyze(relativePath, data)
+		if analysis.Language != "" {
+			languages[analysis.Language] = struct{}{}
+		}
+		identifiers = append(identifiers, analysis.Identifiers...)
+		rawDependencies = append(rawDependencies, analysis.Dependencies...)
+		for _, evidence := range analysis.Evidence {
+			builder.WriteByte('\n')
+			builder.WriteString(evidence)
+		}
+		if analyzer.IsManifest(relativePath) {
 			manifests = append(manifests, filepath.ToSlash(relativePath))
-			rawDependencies = append(rawDependencies, parseManifest(relativePath, data)...)
 		}
 	}
 
@@ -184,6 +212,7 @@ func (s Scanner) scanProject(name, path string, override config.ProjectOverride)
 		Path:         path,
 		Description:  description,
 		Aliases:      append([]string(nil), override.Aliases...),
+		Identifiers:  uniqueStrings(identifiers),
 		Languages:    languageList,
 		Dependencies: uniqueStrings(rawDependencies),
 		Manifests:    uniqueStrings(manifests),
@@ -237,8 +266,12 @@ func looksLikeProject(path string) bool {
 }
 
 func hasManifest(path string) bool {
-	for _, name := range []string{"go.mod", "package.json", "pyproject.toml", "Cargo.toml", "pom.xml", "build.gradle", "build.gradle.kts"} {
-		if fileExists(filepath.Join(path, name)) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() && analyzer.IsManifest(entry.Name()) {
 			return true
 		}
 	}
@@ -246,14 +279,25 @@ func hasManifest(path string) bool {
 }
 
 func hasWorkspaceMarker(path string) bool {
-	for _, name := range []string{"go.work", "pnpm-workspace.yaml", "lerna.json", "nx.json"} {
+	for _, name := range []string{"go.work", "pnpm-workspace.yaml", "lerna.json", "nx.json", "global.json", "Directory.Build.props"} {
 		if fileExists(filepath.Join(path, name)) {
 			return true
 		}
 	}
-	for _, name := range []string{"package.json", "Cargo.toml"} {
+	for _, name := range []string{"package.json", "Cargo.toml", "pyproject.toml", "pom.xml", "settings.gradle", "settings.gradle.kts"} {
 		data, err := os.ReadFile(filepath.Join(path, name))
-		if err == nil && (bytes.Contains(data, []byte("workspaces")) || bytes.Contains(data, []byte("[workspace]"))) {
+		if err == nil && (bytes.Contains(data, []byte("workspaces")) ||
+			bytes.Contains(data, []byte("[workspace]")) ||
+			bytes.Contains(data, []byte("[tool.uv.workspace]")) ||
+			bytes.Contains(data, []byte("<modules>")) ||
+			bytes.Contains(data, []byte("include(")) ||
+			bytes.Contains(data, []byte("include "))) {
+			return true
+		}
+	}
+	entries, _ := os.ReadDir(path)
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(strings.ToLower(entry.Name()), ".sln") {
 			return true
 		}
 	}
@@ -270,70 +314,11 @@ func shouldIndex(relativePath string) bool {
 		name == "go.sum" || strings.HasPrefix(lowerName, ".golangci") || strings.Contains(lowerName, "package-lock") {
 		return false
 	}
-	if isManifest(name) || name == "Makefile" || name == "Dockerfile" || strings.HasPrefix(lowerName, "readme") || name == "AGENTS.md" {
+	if analyzer.IsManifest(name) || name == "Makefile" || name == "Dockerfile" || strings.HasPrefix(lowerName, "readme") || name == "AGENTS.md" {
 		return true
 	}
 	_, ok := indexedExtensions[strings.ToLower(filepath.Ext(name))]
 	return ok
-}
-
-func isManifest(name string) bool {
-	switch strings.ToLower(name) {
-	case "go.mod", "go.work", "package.json", "pnpm-workspace.yaml", "pyproject.toml", "cargo.toml", "pom.xml", "build.gradle", "build.gradle.kts":
-		return true
-	default:
-		return false
-	}
-}
-
-func parseManifest(path string, data []byte) []string {
-	name := strings.ToLower(filepath.Base(path))
-	var dependencies []string
-	switch name {
-	case "go.mod":
-		scanner := bufio.NewScanner(bytes.NewReader(data))
-		inRequire := false
-		for scanner.Scan() {
-			line := strings.TrimSpace(scanner.Text())
-			if strings.HasPrefix(line, "module ") {
-				dependencies = append(dependencies, strings.TrimSpace(strings.TrimPrefix(line, "module ")))
-			}
-			if line == "require (" {
-				inRequire = true
-				continue
-			}
-			if inRequire && line == ")" {
-				inRequire = false
-				continue
-			}
-			if strings.HasPrefix(line, "require ") {
-				line = strings.TrimSpace(strings.TrimPrefix(line, "require "))
-			}
-			if inRequire || strings.Contains(line, " ") {
-				fields := strings.Fields(line)
-				if len(fields) >= 2 && (strings.Contains(fields[0], ".") || strings.Contains(fields[0], "/")) {
-					dependencies = append(dependencies, fields[0])
-				}
-			}
-		}
-	case "package.json":
-		var pkg struct {
-			Name                 string            `json:"name"`
-			Dependencies         map[string]string `json:"dependencies"`
-			DevDependencies      map[string]string `json:"devDependencies"`
-			PeerDependencies     map[string]string `json:"peerDependencies"`
-			OptionalDependencies map[string]string `json:"optionalDependencies"`
-		}
-		if json.Unmarshal(data, &pkg) == nil {
-			dependencies = append(dependencies, pkg.Name)
-			for _, values := range []map[string]string{pkg.Dependencies, pkg.DevDependencies, pkg.PeerDependencies, pkg.OptionalDependencies} {
-				for dependency := range values {
-					dependencies = append(dependencies, dependency)
-				}
-			}
-		}
-	}
-	return dependencies
 }
 
 func resolveDependencies(projects []model.Project) {
@@ -342,6 +327,10 @@ func resolveDependencies(projects []model.Project) {
 		identities[strings.ToLower(project.Name)] = project.Name
 		for _, alias := range project.Aliases {
 			identities[strings.ToLower(alias)] = project.Name
+		}
+		for _, identifier := range project.Identifiers {
+			identities[strings.ToLower(identifier)] = project.Name
+			identities[strings.ToLower(filepath.Base(identifier))] = project.Name
 		}
 	}
 	for i := range projects {
@@ -407,47 +396,39 @@ func readPrefix(path string, limit int64) ([]byte, error) {
 	return io.ReadAll(io.LimitReader(file, limit))
 }
 
-func languageForExtension(ext string) string {
-	switch ext {
-	case ".go", ".mod":
-		return "Go"
-	case ".php":
-		return "PHP"
-	case ".js", ".jsx":
-		return "JavaScript"
-	case ".ts", ".tsx":
-		return "TypeScript"
-	case ".vue":
-		return "Vue"
-	case ".proto":
-		return "Protocol Buffers"
-	case ".sql":
-		return "SQL"
-	case ".java", ".gradle", ".kt":
-		return "JVM"
-	case ".py":
-		return "Python"
-	case ".rs":
-		return "Rust"
-	case ".swift":
-		return "Swift"
-	case ".rb":
-		return "Ruby"
-	case ".cs":
-		return "C#"
-	default:
-		return ""
-	}
-}
-
 func fileExists(path string) bool { _, err := os.Stat(path); return err == nil }
 func excluded(name string, excludes []string) bool {
+	name = filepath.ToSlash(name)
 	for _, pattern := range excludes {
+		pattern = filepath.ToSlash(pattern)
 		if matched, _ := filepath.Match(pattern, name); matched {
+			return true
+		}
+		if matched, _ := filepath.Match(pattern, filepath.Base(name)); matched {
 			return true
 		}
 	}
 	return false
+}
+func included(name string, includes []string) bool {
+	if len(includes) == 0 {
+		return true
+	}
+	name = filepath.ToSlash(name)
+	for _, pattern := range includes {
+		pattern = filepath.ToSlash(pattern)
+		if matched, _ := filepath.Match(pattern, name); matched {
+			return true
+		}
+		if matched, _ := filepath.Match(pattern, filepath.Base(name)); matched {
+			return true
+		}
+	}
+	return false
+}
+func isIgnoredDir(name string) bool {
+	_, ignored := ignoredDirs[name]
+	return ignored
 }
 func sortedKeys(values map[string]struct{}) []string {
 	result := make([]string, 0, len(values))

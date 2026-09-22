@@ -1,0 +1,6 @@
+{
+  "name": "commerce/catalog-service",
+  "require": {
+    "commerce/shared-libs": "^1.0"
+  }
+}

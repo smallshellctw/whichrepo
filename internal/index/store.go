@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS projects_v2 (
     path TEXT NOT NULL,
     description TEXT NOT NULL,
     aliases_json TEXT NOT NULL,
+    identifiers_json TEXT NOT NULL DEFAULT '[]',
     languages_json TEXT NOT NULL,
     dependencies_json TEXT NOT NULL,
     manifests_json TEXT NOT NULL,
@@ -55,6 +56,13 @@ CREATE TABLE IF NOT EXISTS projects_v2 (
 );
 CREATE INDEX IF NOT EXISTS idx_projects_v2_path ON projects_v2(path);
 `)
+	if err == nil {
+		// Existing v2 indexes predate package identifiers. SQLite has no
+		// IF NOT EXISTS form for ADD COLUMN, so duplicate-column is harmless.
+		if _, alterErr := s.db.Exec(`ALTER TABLE projects_v2 ADD COLUMN identifiers_json TEXT NOT NULL DEFAULT '[]'`); alterErr != nil && !strings.Contains(strings.ToLower(alterErr.Error()), "duplicate column") {
+			return alterErr
+		}
+	}
 	return err
 }
 
@@ -68,18 +76,19 @@ func (s *Store) ReplaceProjects(ctx context.Context, projects []model.Project) e
 		return err
 	}
 	stmt, err := tx.PrepareContext(ctx, `INSERT INTO projects_v2
-(name, path, description, aliases_json, languages_json, dependencies_json, manifests_json, file_count, content, indexed_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+(name, path, description, aliases_json, identifiers_json, languages_json, dependencies_json, manifests_json, file_count, content, indexed_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for _, project := range projects {
 		aliases, _ := json.Marshal(project.Aliases)
+		identifiers, _ := json.Marshal(project.Identifiers)
 		languages, _ := json.Marshal(project.Languages)
 		dependencies, _ := json.Marshal(project.Dependencies)
 		manifests, _ := json.Marshal(project.Manifests)
-		if _, err := stmt.ExecContext(ctx, project.Name, project.Path, project.Description, string(aliases), string(languages), string(dependencies), string(manifests), project.FileCount, project.Content, project.IndexedAt.Format("2006-01-02T15:04:05Z07:00")); err != nil {
+		if _, err := stmt.ExecContext(ctx, project.Name, project.Path, project.Description, string(aliases), string(identifiers), string(languages), string(dependencies), string(manifests), project.FileCount, project.Content, project.IndexedAt.Format("2006-01-02T15:04:05Z07:00")); err != nil {
 			return err
 		}
 	}
@@ -87,7 +96,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 }
 
 func (s *Store) Projects(ctx context.Context) ([]model.Project, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT name, path, description, aliases_json, languages_json, dependencies_json, manifests_json, file_count, content, indexed_at FROM projects_v2 ORDER BY name`)
+	rows, err := s.db.QueryContext(ctx, `SELECT name, path, description, aliases_json, identifiers_json, languages_json, dependencies_json, manifests_json, file_count, content, indexed_at FROM projects_v2 ORDER BY name`)
 	if err != nil {
 		return nil, err
 	}
@@ -95,11 +104,12 @@ func (s *Store) Projects(ctx context.Context) ([]model.Project, error) {
 	var projects []model.Project
 	for rows.Next() {
 		var project model.Project
-		var aliases, languages, dependencies, manifests, indexedAt string
-		if err := rows.Scan(&project.Name, &project.Path, &project.Description, &aliases, &languages, &dependencies, &manifests, &project.FileCount, &project.Content, &indexedAt); err != nil {
+		var aliases, identifiers, languages, dependencies, manifests, indexedAt string
+		if err := rows.Scan(&project.Name, &project.Path, &project.Description, &aliases, &identifiers, &languages, &dependencies, &manifests, &project.FileCount, &project.Content, &indexedAt); err != nil {
 			return nil, err
 		}
 		_ = json.Unmarshal([]byte(aliases), &project.Aliases)
+		_ = json.Unmarshal([]byte(identifiers), &project.Identifiers)
 		_ = json.Unmarshal([]byte(languages), &project.Languages)
 		_ = json.Unmarshal([]byte(dependencies), &project.Dependencies)
 		_ = json.Unmarshal([]byte(manifests), &project.Manifests)
@@ -125,7 +135,7 @@ func (s *Store) Search(ctx context.Context, query string, limit int) ([]model.Ca
 	docLengths := make([]int, len(projects))
 	documentFrequency := make(map[string]int)
 	for i, project := range projects {
-		tokens := tokenize(project.Name + " " + strings.Join(project.Aliases, " ") + " " + project.Description + " " + project.Content)
+		tokens := tokenize(project.Name + " " + strings.Join(project.Aliases, " ") + " " + strings.Join(project.Identifiers, " ") + " " + project.Description + " " + project.Content)
 		frequencies := make(map[string]int, len(tokens))
 		for _, token := range tokens {
 			frequencies[token]++
