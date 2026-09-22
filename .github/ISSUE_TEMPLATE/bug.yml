@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a reproducible WhichRepo problem
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction
+      description: Use a public or minimal fixture. Do not attach private source or credentials.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: WhichRepo version
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: OS and architecture
+    validations:
+      required: true
