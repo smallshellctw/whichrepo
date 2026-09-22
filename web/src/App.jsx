@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CheckCircle, CirclesThreePlus, Code, Copy, Database, FileCode, Folder, GearSix, Graph, LockSimple, MagnifyingGlass, Pulse, ShieldCheck, Sparkle } from "@phosphor-icons/react";
+import { ArrowRight, CheckCircle, CirclesThreePlus, Code, Copy, Database, DownloadSimple, FileCode, Folder, GearSix, GithubLogo, Graph, LockSimple, MagnifyingGlass, Pulse, ShieldCheck, Sparkle } from "@phosphor-icons/react";
 import { Background, Controls, Handle, MarkerType, Position, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -36,19 +36,83 @@ function SignalMap({ route, projects, task }) {
 function EvidencePanel({ route, onCopy }) { const candidates = route.candidates || []; return <aside className="evidence-panel"><div className="panel-heading"><div><p className="eyebrow">Evidence</p><h2>Top signals from your workspace</h2></div><span className="privacy"><LockSimple size={14} weight="fill" /> Local only</span></div><div className="evidence-list">{candidates.slice(0, 3).map((candidate, index) => <article className="evidence-item" key={candidate.project}><div className="evidence-title"><FileCode size={19} weight="duotone" /><strong>{candidate.evidence?.[0] || candidate.project}</strong><span className={index === 0 ? "score primary" : "score"}>{score(candidate, candidates)}%</span></div><p>{candidate.evidence?.[1] || candidate.description}</p><div className="code-line"><span>{candidate.project}</span><code>{candidate.evidence?.[2] || "Relevant repository metadata"}</code></div></article>)}</div><button className="primary-action" onClick={onCopy}><Copy size={19} weight="bold" /> Copy agent context</button><p className="action-note">Copies a focused, evidence-backed context for your coding agent.</p></aside>; }
 
 function RouterView({ projects, workspace }) {
-  const [task, setTask] = useState("Add retry limits to checkout webhooks"); const [route, setRoute] = useState(demoRoute); const [loading, setLoading] = useState(false); const [copied, setCopied] = useState(false);
-  async function runRoute(event) { event?.preventDefault(); if (!task.trim()) return; setLoading(true); try { const response = await fetch("/api/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ task }) }); if (!response.ok) throw new Error("Route failed"); setRoute(await response.json()); } catch { setRoute({ ...demoRoute, warnings: ["Demo data shown because the local API is unavailable."] }); } finally { setLoading(false); } }
-  async function copyContext() { await navigator.clipboard.writeText(JSON.stringify(route, null, 2)); setCopied(true); window.setTimeout(() => setCopied(false), 1600); }
-  return <div className="router-view"><header className="workspace-header"><div><p className="eyebrow">{workspace?.project_count || projects.length} repositories indexed</p><h1>Describe the task. <span>Find the repo.</span> Show the evidence.</h1></div><div className="mode-pill"><span /> {route.decision_provider === "local" ? "Local routing" : route.decision_provider}</div></header><form className="task-form" onSubmit={runRoute}><Sparkle size={21} weight="fill" /><input value={task} onChange={(event) => setTask(event.target.value)} aria-label="Describe the engineering task" /><button type="submit" disabled={loading} aria-label="Route task">{loading ? <Pulse className="spin" size={20} /> : <ArrowRight size={22} weight="bold" />}</button></form>{route.warnings?.length > 0 && <div className="warning-strip">{route.warnings[0]}</div>}<div className="router-layout"><section className="map-column"><div className="map-meta"><span><Graph size={17} /> Workspace signal map</span><div className="legend"><i className="cyan" /> Analysis <i className="lime" /> Primary <i className="blue" /> Related</div></div><SignalMap route={route} projects={projects.length ? projects : demoProjects} task={task} /></section><EvidencePanel route={route} onCopy={copyContext} /></div>{copied && <div className="toast"><CheckCircle size={18} weight="fill" /> Agent context copied</div>}</div>;
+  const [task, setTask] = useState("Add retry limits to checkout webhooks");
+  const [route, setRoute] = useState(demoRoute);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  async function runRoute(event) {
+    event?.preventDefault();
+    if (!task.trim()) return;
+    setLoading(true);
+    try {
+      const response = await fetch("/api/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ task }) });
+      if (!response.ok) throw new Error("Route failed");
+      setRoute(await response.json());
+    } catch {
+      setRoute({ ...demoRoute, warnings: ["Demo data shown because the local API is unavailable."] });
+    } finally {
+      setLoading(false);
+    }
+  }
+  async function copyContext() {
+    await navigator.clipboard.writeText(JSON.stringify(route, null, 2));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
+  }
+  const clarification = route.needs_clarification === true ? "Needed" : "Not needed";
+  return <div className="router-view">
+    <header className="workspace-header">
+      <div><p className="eyebrow">{workspace?.project_count || projects.length || demoProjects.length} repositories indexed</p><h1>Describe the task. <span>Find the repo.</span> Show the evidence.</h1></div>
+      <div className="header-actions"><div className="mode-pill"><span /> {route.decision_provider === "local" ? "Local routing" : route.decision_provider}</div><a className="install-chip" href="https://github.com/smallshellctw/whichrepo#install" target="_blank" rel="noreferrer"><DownloadSimple size={14} /> Install</a></div>
+    </header>
+    <form className="task-form" onSubmit={runRoute}><Sparkle size={21} weight="fill" /><input value={task} onChange={(event) => setTask(event.target.value)} aria-label="Describe the engineering task" /><button type="submit" disabled={loading} aria-label="Route task">{loading ? <Pulse className="spin" size={20} /> : <ArrowRight size={22} weight="bold" />}</button></form>
+    {route.primary_project && <section className="decision-summary" aria-label="Routing decision"><div><span>Primary</span><strong>{route.primary_project}</strong></div><div><span>Related</span><strong>{route.related_projects?.join(", ") || "None"}</strong></div><div><span>Clarification</span><strong>{clarification}</strong></div><div><span>Change type</span><strong>{route.change_type || "Unclassified"}</strong></div></section>}
+    {route.warnings?.length > 0 && <div className="warning-strip">{route.warnings[0]}</div>}
+    <div className="router-layout"><section className="map-column"><div className="map-meta"><span><Graph size={17} /> Workspace signal map</span><div className="legend"><i className="cyan" /> Analysis <i className="lime" /> Primary <i className="blue" /> Related</div></div><SignalMap route={route} projects={projects.length ? projects : demoProjects} task={task} /></section><EvidencePanel route={route} onCopy={copyContext} /></div>
+    {copied && <div className="toast"><CheckCircle size={18} weight="fill" /> Agent context copied</div>}
+  </div>;
 }
 
 function RepositoriesView({ projects }) { const values = projects.length ? projects : demoProjects; return <section className="content-view"><div className="content-heading"><div><p className="eyebrow">Workspace</p><h1>Repositories</h1></div><span>{values.length} indexed projects</span></div><div className="project-grid">{values.map((project) => <article className="project-row" key={project.name}><span className="project-mark"><Folder size={22} weight="duotone" /></span><div><h3>{project.name}</h3><p>{project.description || "No description yet"}</p><small>{(project.languages || []).join(" · ") || "Language not detected"}</small></div><div className="project-stats"><strong>{project.file_count || 0}</strong><span>files</span><strong>{project.dependencies?.length || 0}</strong><span>links</span></div></article>)}</div></section>; }
-function EvaluationView() { return <section className="content-view"><div className="content-heading"><div><p className="eyebrow">Evaluation lab</p><h1>Routing quality</h1></div><span>Reproducible, local benchmarks</span></div><div className="metric-grid"><article><strong>95%</strong><span>Mixed-language Top-3 baseline</span></article><article><strong>0</strong><span>Source files uploaded</span></article><article><strong>100</strong><span>Starter evaluation tasks</span></article></div><div className="empty-panel"><Pulse size={36} weight="duotone" /><h2>Run your first evaluation</h2><p>Import a JSONL dataset with task text and expected repositories. WhichRepo compares local retrieval with optional decision providers without sending full source code.</p><button>Choose dataset</button></div></section>; }
-function SettingsView({ workspace }) { return <section className="content-view"><div className="content-heading"><div><p className="eyebrow">Settings & privacy</p><h1>Local by default</h1></div><span className="privacy"><ShieldCheck size={16} weight="fill" /> No telemetry</span></div><div className="settings-list"><article><div><h3>Workspace</h3><p>{workspace?.workspace || "Demo workspace"}</p></div><span>Indexed locally</span></article><article><div><h3>Language analyzers</h3><p>Go · TypeScript · Python · Java · Rust · .NET · PHP · Ruby</p></div><span>Pure-Go Tree-sitter</span></article><article><div><h3>Decision provider</h3><p>Local BM25 retrieval</p></div><span>Optional Jev enhancement</span></article><article><div><h3>Remote payload</h3><p>Task text, candidate summaries, and redacted evidence only</p></div><span>Preview before sending</span></article></div></section>; }
+function EvaluationView() { return <section className="content-view"><div className="content-heading"><div><p className="eyebrow">Evaluation lab</p><h1>Routing quality</h1></div><span>Reproducible, local benchmarks</span></div><div className="metric-grid"><article><strong>95%</strong><span>Mixed-language Top-3 baseline</span></article><article><strong>0</strong><span>Source files uploaded</span></article><article><strong>100</strong><span>Starter evaluation tasks</span></article></div><div className="empty-panel"><Pulse size={36} weight="duotone" /><h2>Run your first evaluation</h2><p>Run <code>whichrepo eval --dataset tasks.jsonl</code> against task text and expected repositories. The public starter dataset is reproducible without a model API.</p><a className="secondary-action" href="https://github.com/smallshellctw/whichrepo/blob/main/benchmarks/starter.jsonl" target="_blank" rel="noreferrer">View starter benchmark</a></div></section>; }
+function SettingsView({ workspace }) { return <section className="content-view"><div className="content-heading"><div><p className="eyebrow">Settings & privacy</p><h1>Local by default</h1></div><span className="privacy"><ShieldCheck size={16} weight="fill" /> No telemetry</span></div><div className="settings-list"><article><div><h3>Workspace</h3><p>{workspace?.workspace || "Demo workspace"}</p></div><span>Indexed locally</span></article><article><div><h3>Language analyzers</h3><p>Go · TypeScript · Python · Java · Rust · .NET · PHP · Ruby</p></div><span>Pure-Go Tree-sitter</span></article><article><div><h3>Configuration</h3><p><code>whichrepo config show</code> displays defaults, team settings, and local overrides.</p></div><a href="https://github.com/smallshellctw/whichrepo/blob/main/docs/configuration.md" target="_blank" rel="noreferrer">View guide</a></article><article><div><h3>Decision provider</h3><p>Local BM25 retrieval</p></div><span>Optional Jev enhancement</span></article><article><div><h3>Remote payload</h3><p>Task text, candidate summaries, and redacted evidence only</p></div><span>Preview before sending</span></article></div></section>; }
+
+function NavButton({ id, icon: Icon, label, view, onSelect }) {
+  const active = view === id;
+  return <button key={id} title={label} className={active ? "active" : ""} onClick={() => onSelect(id)}><Icon size={21} weight={active ? "duotone" : "regular"} />{label}</button>;
+}
 
 export function App() {
-  const [view, setView] = useState("router"); const [projects, setProjects] = useState([]); const [workspace, setWorkspace] = useState(null);
-  useEffect(() => { Promise.all([fetch("/api/projects"), fetch("/api/status")]).then(async ([projectsResponse, statusResponse]) => { if (projectsResponse.ok) setProjects(await projectsResponse.json()); if (statusResponse.ok) setWorkspace(await statusResponse.json()); }).catch(() => {}); }, []);
+  const [view, setView] = useState("router");
+  const [projects, setProjects] = useState([]);
+  const [workspace, setWorkspace] = useState(null);
+  useEffect(() => {
+    Promise.all([fetch("/api/projects"), fetch("/api/status")])
+      .then(async ([projectsResponse, statusResponse]) => {
+        if (projectsResponse.ok) setProjects(await projectsResponse.json());
+        if (statusResponse.ok) setWorkspace(await statusResponse.json());
+      })
+      .catch(() => {});
+  }, []);
   const nav = [["router", MagnifyingGlass, "Router"], ["repositories", Folder, "Repositories"], ["evaluation", Pulse, "Evaluation"], ["settings", GearSix, "Settings"]];
-  return <div className="app-shell"><aside className="sidebar"><div className="brand"><CirclesThreePlus size={28} weight="duotone" /><strong>WhichRepo</strong></div><nav>{nav.map(([id, Icon, label]) => <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}><Icon size={21} weight={view === id ? "duotone" : "regular"} />{label}</button>)}</nav><div className="sidebar-footer"><span className="privacy"><LockSimple size={14} weight="fill" /> Local only</span><p>Your code stays on your machine.</p><small>Preview · Open source</small></div></aside><main>{view === "router" && <RouterView projects={projects} workspace={workspace} />}{view === "repositories" && <RepositoriesView projects={projects} />}{view === "evaluation" && <EvaluationView />}{view === "settings" && <SettingsView workspace={workspace} />}</main></div>;
+  return <div className="app-shell">
+    <aside className="sidebar">
+      <div className="brand"><CirclesThreePlus size={28} weight="duotone" /><strong>WhichRepo</strong></div>
+      <nav aria-label="Dashboard sections">{nav.map(([id, icon, label]) => <NavButton key={id} id={id} icon={icon} label={label} view={view} onSelect={setView} />)}</nav>
+      <div className="sidebar-footer">
+        <span className="privacy"><LockSimple size={14} weight="fill" /> Local only</span>
+        <p>Your code stays on your machine.</p>
+        <div className="sidebar-links">
+          <a href="https://github.com/smallshellctw/whichrepo#install" target="_blank" rel="noreferrer"><DownloadSimple size={15} /> Install</a>
+          <a href="https://github.com/smallshellctw/whichrepo" target="_blank" rel="noreferrer"><GithubLogo size={15} /> GitHub</a>
+        </div>
+      </div>
+    </aside>
+    <main>
+      {view === "router" && <RouterView projects={projects} workspace={workspace} />}
+      {view === "repositories" && <RepositoriesView projects={projects} />}
+      {view === "evaluation" && <EvaluationView />}
+      {view === "settings" && <SettingsView workspace={workspace} />}
+    </main>
+  </div>;
 }

@@ -9,4 +9,6 @@ Expected protections:
 - Credential-like files are excluded before indexing.
 - Provider API keys are read from environment variables and never returned by CLI, MCP, or Dashboard APIs.
 - The Dashboard only binds to loopback addresses.
+- Workspace configuration cannot disable built-in credential exclusions.
+- `whichrepo setup cursor` preserves existing MCP servers and writes a timestamped backup before changing the file.
 - Remote-provider failure always falls back to local routing.
