@@ -1,0 +1,100 @@
+{"task":"Add retry limits to checkout webhooks","expected_projects":["payments-api","webhook-worker"]}
+{"task":"Validate payment callback signatures","expected_projects":["payments-api"]}
+{"task":"Add an endpoint for refund status","expected_projects":["payments-api"]}
+{"task":"Fix checkout webhook timeout handling","expected_projects":["payments-api"]}
+{"task":"Return payment decline reasons from checkout","expected_projects":["payments-api"]}
+{"task":"Add idempotency to payment webhooks","expected_projects":["payments-api"]}
+{"task":"Log failed checkout callbacks","expected_projects":["payments-api"]}
+{"task":"Support partial refunds in the payments API","expected_projects":["payments-api"]}
+{"task":"Add webhook delivery metrics to checkout","expected_projects":["payments-api"]}
+{"task":"Reject duplicate payment callback events","expected_projects":["payments-api"]}
+{"task":"Change the checkout payment timeout","expected_projects":["payments-api"]}
+{"task":"Document the payment webhook contract","expected_projects":["payments-api"]}
+{"task":"Add a health endpoint for checkout payments","expected_projects":["payments-api"]}
+{"task":"Persist webhook request identifiers","expected_projects":["payments-api"]}
+{"task":"Validate refund currency codes","expected_projects":["payments-api"]}
+{"task":"Rate limit incoming checkout webhooks","expected_projects":["payments-api"]}
+{"task":"Add tracing around payment processing","expected_projects":["payments-api"]}
+{"task":"Handle malformed webhook payloads","expected_projects":["payments-api"]}
+{"task":"Expose checkout retry policy","expected_projects":["payments-api"]}
+{"task":"Fix payment webhook response codes","expected_projects":["payments-api"]}
+{"task":"Retry failed webhook jobs with backoff","expected_projects":["webhook-worker"]}
+{"task":"Limit concurrent webhook worker jobs","expected_projects":["webhook-worker"]}
+{"task":"Add dead letter handling for webhook jobs","expected_projects":["webhook-worker"]}
+{"task":"Stop retrying permanently failed callbacks","expected_projects":["webhook-worker"]}
+{"task":"Add jitter to webhook job scheduling","expected_projects":["webhook-worker"]}
+{"task":"Record worker delivery attempt count","expected_projects":["webhook-worker"]}
+{"task":"Drain webhook jobs during shutdown","expected_projects":["webhook-worker"]}
+{"task":"Add queue lag metrics to webhook processing","expected_projects":["webhook-worker"]}
+{"task":"Prioritize urgent webhook jobs","expected_projects":["webhook-worker"]}
+{"task":"Make webhook job processing idempotent","expected_projects":["webhook-worker"]}
+{"task":"Add a webhook worker readiness check","expected_projects":["webhook-worker"]}
+{"task":"Reduce webhook worker polling interval","expected_projects":["webhook-worker"]}
+{"task":"Persist failed webhook job reasons","expected_projects":["webhook-worker"]}
+{"task":"Add exponential backoff to the job processor","expected_projects":["webhook-worker"]}
+{"task":"Fix duplicate webhook worker execution","expected_projects":["webhook-worker"]}
+{"task":"Scale webhook consumers by queue depth","expected_projects":["webhook-worker"]}
+{"task":"Add graceful retry cancellation","expected_projects":["webhook-worker"]}
+{"task":"Trace webhook jobs across attempts","expected_projects":["webhook-worker"]}
+{"task":"Configure a maximum job age","expected_projects":["webhook-worker"]}
+{"task":"Batch webhook retry scheduling","expected_projects":["webhook-worker"]}
+{"task":"Add maxAttempts to the shared retry policy","expected_projects":["shared-libs"]}
+{"task":"Define a common webhook event schema","expected_projects":["shared-libs"]}
+{"task":"Export shared checkout types","expected_projects":["shared-libs"]}
+{"task":"Add backoffMs to retry utilities","expected_projects":["shared-libs"]}
+{"task":"Version the shared payment schema","expected_projects":["shared-libs"]}
+{"task":"Add common error codes for checkout","expected_projects":["shared-libs"]}
+{"task":"Publish retry policy type definitions","expected_projects":["shared-libs"]}
+{"task":"Add validation helpers for webhook schemas","expected_projects":["shared-libs"]}
+{"task":"Create shared payment identifiers","expected_projects":["shared-libs"]}
+{"task":"Deprecate an old retry utility","expected_projects":["shared-libs"]}
+{"task":"Add a shared currency enum","expected_projects":["shared-libs"]}
+{"task":"Document common checkout types","expected_projects":["shared-libs"]}
+{"task":"Export webhook signature interfaces","expected_projects":["shared-libs"]}
+{"task":"Add shared duration parsing","expected_projects":["shared-libs"]}
+{"task":"Create a reusable retry result type","expected_projects":["shared-libs"]}
+{"task":"Add tests for retry policy serialization","expected_projects":["shared-libs"]}
+{"task":"Normalize shared webhook timestamps","expected_projects":["shared-libs"]}
+{"task":"Add common event metadata","expected_projects":["shared-libs"]}
+{"task":"Split payment types from retry types","expected_projects":["shared-libs"]}
+{"task":"Add a shared backoff calculator","expected_projects":["shared-libs"]}
+{"task":"Show payment retry status in checkout UI","expected_projects":["frontend-app"]}
+{"task":"Add a loading state to checkout submission","expected_projects":["frontend-app"]}
+{"task":"Display refund status to customers","expected_projects":["frontend-app"]}
+{"task":"Fix checkout button double submission","expected_projects":["frontend-app"]}
+{"task":"Add payment decline messaging","expected_projects":["frontend-app"]}
+{"task":"Improve checkout form validation","expected_projects":["frontend-app"]}
+{"task":"Track checkout page errors","expected_projects":["frontend-app"]}
+{"task":"Add retry guidance to the checkout UI","expected_projects":["frontend-app"]}
+{"task":"Support a new payment method in frontend","expected_projects":["frontend-app"]}
+{"task":"Make checkout responsive on mobile","expected_projects":["frontend-app"]}
+{"task":"Add an order confirmation screen","expected_projects":["frontend-app"]}
+{"task":"Show webhook processing state to operators","expected_projects":["frontend-app"]}
+{"task":"Improve checkout accessibility labels","expected_projects":["frontend-app"]}
+{"task":"Add optimistic payment status updates","expected_projects":["frontend-app"]}
+{"task":"Fix stale checkout totals","expected_projects":["frontend-app"]}
+{"task":"Add frontend telemetry opt-out","expected_projects":["frontend-app"]}
+{"task":"Render payment errors consistently","expected_projects":["frontend-app"]}
+{"task":"Add checkout localization strings","expected_projects":["frontend-app"]}
+{"task":"Update the checkout API client","expected_projects":["frontend-app"]}
+{"task":"Add keyboard navigation to payment methods","expected_projects":["frontend-app"]}
+{"task":"Increase payments-api replicas","expected_projects":["infra"]}
+{"task":"Add Kubernetes limits for webhook workers","expected_projects":["infra"]}
+{"task":"Configure checkout service autoscaling","expected_projects":["infra"]}
+{"task":"Add a deployment health check","expected_projects":["infra"]}
+{"task":"Rotate payment service configuration","expected_projects":["infra"]}
+{"task":"Create a webhook worker deployment","expected_projects":["infra"]}
+{"task":"Add network policy for payments","expected_projects":["infra"]}
+{"task":"Set retry worker resource requests","expected_projects":["infra"]}
+{"task":"Configure payment service disruption budget","expected_projects":["infra"]}
+{"task":"Add checkout environment variables","expected_projects":["infra"]}
+{"task":"Update Kubernetes payment labels","expected_projects":["infra"]}
+{"task":"Add production ingress for checkout","expected_projects":["infra"]}
+{"task":"Configure webhook worker secrets","expected_projects":["infra"]}
+{"task":"Add staging deployment overlays","expected_projects":["infra"]}
+{"task":"Tune payment service readiness probes","expected_projects":["infra"]}
+{"task":"Add deployment rollback settings","expected_projects":["infra"]}
+{"task":"Create service monitors for payments","expected_projects":["infra"]}
+{"task":"Pin the checkout container image","expected_projects":["infra"]}
+{"task":"Add webhook worker pod affinity","expected_projects":["infra"]}
+{"task":"Document the deployment configuration","expected_projects":["infra"]}

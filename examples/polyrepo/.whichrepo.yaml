@@ -1,0 +1,27 @@
+version: 1
+workspace:
+  name: commerce-platform
+  exclude:
+    - archive-*
+    - tmp-*
+projects:
+  payments-api:
+    path: services/payments-api
+    description: Checkout, payment processing, and webhook endpoints
+    aliases: [checkout, payments, webhooks, refunds, endpoint, currency, callbacks]
+  webhook-worker:
+    path: workers/webhook-worker
+    description: Background processing and retry handling for webhook events
+    aliases: [retry worker, webhook jobs, queue, consumer, job processor, dead letter]
+  frontend-app:
+    path: apps/frontend-app
+    description: Customer checkout experience
+    aliases: [checkout UI, frontend, customer screen, form, button, accessibility, localization]
+  shared-libs:
+    path: packages/shared-libs
+    description: Shared schemas and retry utilities
+    aliases: [shared retry, common types, schema, interfaces, utilities, enum]
+  infra:
+    path: infra
+    description: Deployment and runtime configuration
+    aliases: [kubernetes, deployment, replicas, autoscaling, resources, ingress, pod, secrets, image, readiness, staging]
