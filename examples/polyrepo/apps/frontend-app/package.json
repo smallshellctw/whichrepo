@@ -1,0 +1,8 @@
+{
+  "name": "@commerce/frontend-app",
+  "version": "0.1.0",
+  "description": "Customer checkout experience",
+  "dependencies": {
+    "@commerce/shared-libs": "workspace:*"
+  }
+}

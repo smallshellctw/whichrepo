@@ -1,0 +1,5 @@
+{
+  "name": "@commerce/shared-libs",
+  "version": "0.1.0",
+  "description": "Shared schemas and retry utilities"
+}
