@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "whichrepo": {
+      "type": "stdio",
+      "command": "whichrepo",
+      "args": ["mcp"]
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "whichrepo",
+  "version": "0.1.0",
+  "description": "Route engineering tasks to the right repositories with local evidence.",
+  "author": {
+    "name": "smallshellctw",
+    "email": "smallshellctw@users.noreply.github.com",
+    "url": "https://github.com/smallshellctw"
+  },
+  "homepage": "https://smallshellctw.github.io/whichrepo/",
+  "repository": "https://github.com/smallshellctw/whichrepo",
+  "license": "MIT",
+  "keywords": ["multi-repo", "microservices", "coding-agents", "mcp", "local-first"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "WhichRepo",
+    "shortDescription": "Find the right repository for an engineering task",
+    "longDescription": "WhichRepo maps a task to primary and related repositories, shows local evidence, and helps coding agents start with the right scope.",
+    "developerName": "smallshellctw",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read"],
+    "websiteURL": "https://smallshellctw.github.io/whichrepo/",
+    "defaultPrompt": [
+      "Route this task to the right repositories.",
+      "Find which services this bug likely affects.",
+      "Show evidence before I start coding."
+    ],
+    "brandColor": "#2FD3FF"
+  }
+}
