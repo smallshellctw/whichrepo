@@ -1,0 +1,7 @@
+interface:
+  display_name: "WhichRepo Task Router"
+  short_description: "Route tasks to the right repositories with evidence"
+  default_prompt: "Use $whichrepo-task-router to identify the likely repositories and any clarification needed."
+
+policy:
+  allow_implicit_invocation: true
