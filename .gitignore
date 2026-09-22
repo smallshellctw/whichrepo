@@ -1,0 +1,9 @@
+/.data/
+/bin/
+web/node_modules/
+web/dist/
+.whichrepo.local.yaml
+/.env
+*.db
+*.db-shm
+*.db-wal
