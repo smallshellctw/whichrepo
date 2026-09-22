@@ -24,11 +24,12 @@ var assets embed.FS
 type RefreshFunc func(context.Context) (int, error)
 
 type Server struct {
-	Router    router.Router
-	Store     *index.Store
-	Workspace string
-	Provider  string
-	Refresh   RefreshFunc
+	Router      router.Router
+	Store       *index.Store
+	Workspace   string
+	Provider    string
+	DefaultTopK int
+	Refresh     RefreshFunc
 }
 
 func (s Server) Serve(ctx context.Context, address string, openBrowser bool) (string, error) {
@@ -99,6 +100,9 @@ func (s Server) handleRoute(w http.ResponseWriter, request *http.Request) {
 	if err := json.NewDecoder(request.Body).Decode(&input); err != nil || strings.TrimSpace(input.Task) == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "task is required"})
 		return
+	}
+	if input.TopK <= 0 {
+		input.TopK = s.DefaultTopK
 	}
 	result, err := s.Router.Route(request.Context(), input.Task, input.TopK)
 	if err != nil {

@@ -1,5 +1,13 @@
 # Codex
 
+Recommended:
+
+```bash
+whichrepo setup codex --workspace /path/to/workspace
+```
+
+Manual alternative:
+
 Build or install `whichrepo`, then register its stdio MCP server:
 
 ```bash

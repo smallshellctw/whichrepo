@@ -41,6 +41,17 @@ whichrepo --help
 whichrepo doctor
 ```
 
+## Configure coding agents
+
+After initializing a workspace, configure every supported client detected on the machine:
+
+```bash
+whichrepo init /path/to/workspace
+whichrepo setup auto --workspace /path/to/workspace
+```
+
+Use `whichrepo setup codex`, `whichrepo setup claude`, or `whichrepo setup cursor` to target one client. Add `--dry-run` to preview. See [`AI_INSTALL.md`](../AI_INSTALL.md) for a prompt designed to be handed directly to an AI coding agent.
+
 ## Docker
 
 ```bash
@@ -74,4 +85,3 @@ rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/whichrepo"
 ```
 
 On macOS the cache is normally under `~/Library/Caches/whichrepo`. On Windows it uses the OS user cache directory.
-

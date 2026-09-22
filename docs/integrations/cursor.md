@@ -1,5 +1,13 @@
 # Cursor
 
+Recommended (backs up and merges `mcp.json`):
+
+```bash
+whichrepo setup cursor --scope user --workspace /path/to/workspace
+```
+
+Manual alternative:
+
 Add WhichRepo as a stdio MCP server in Cursor settings:
 
 ```json

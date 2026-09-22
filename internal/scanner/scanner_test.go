@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/smallshellctw/whichrepo/internal/config"
@@ -109,5 +110,38 @@ func TestScanHonorsNestedIncludeAndExcludeGlobs(t *testing.T) {
 	}
 	if len(projects) != 1 || projects[0].Name != "payment-api" {
 		t.Fatalf("projects = %+v", projects)
+	}
+}
+
+func TestScanUsesConfigurableExtensionsAndSensitivePatterns(t *testing.T) {
+	root := t.TempDir()
+	project := filepath.Join(root, "search-api")
+	if err := os.MkdirAll(project, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]string{
+		"package.json":    `{"name":"search-api"}`,
+		"ranking.feature": "semantic ranking boost",
+		"customer.secret": "must never be indexed",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(filepath.Join(project, name), []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	projects, err := (Scanner{Root: root, Config: config.Config{
+		Version:  1,
+		Index:    config.Index{MaxFilesPerProject: 20, MaxBytesPerFile: 4096, MaxBytesPerProject: 65536, ExtraExtensions: []string{"feature"}},
+		Privacy:  config.Privacy{AdditionalSensitiveFiles: []string{"*.secret"}},
+		Projects: map[string]config.ProjectOverride{},
+	}}).Scan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(projects) != 1 || !strings.Contains(projects[0].Content, "semantic ranking boost") {
+		t.Fatalf("extra extension was not indexed: %+v", projects)
+	}
+	if strings.Contains(projects[0].Content, "must never be indexed") {
+		t.Fatal("configured sensitive file was indexed")
 	}
 }
