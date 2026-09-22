@@ -10,7 +10,7 @@ A local-first task router for multi-repo workspaces, microservices, monorepos, a
 
 </div>
 
-![WhichRepo signal-map dashboard](docs/design/reference-router.png)
+![WhichRepo signal-map dashboard](assets/whichrepo-dashboard.png)
 
 ## Why WhichRepo?
 
