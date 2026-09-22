@@ -6,7 +6,7 @@
 
 面向微服务、polyrepo、monorepo 和编码 Agent 的语言无关、本地优先任务路由器。
 
-[30 秒上手](#30-秒上手) · [安装](#安装) · [Agent 接入](#编码-agent-接入) · [语言支持](#语言支持) · [隐私](#隐私)
+[30 秒上手](#30-秒上手) · [安装](#安装) · [交给-ai-安装](#交给-ai-安装) · [Agent 接入](#编码-agent-接入) · [语言支持](#语言支持) · [隐私](#隐私)
 
 </div>
 
@@ -42,6 +42,10 @@ irm https://raw.githubusercontent.com/smallshellctw/whichrepo/main/scripts/insta
 安装脚本下载与操作系统、CPU 匹配的预编译二进制，并校验 SHA-256。普通用户不需要安装 Go 或其他语言运行时，也可以直接从 [GitHub Releases](https://github.com/smallshellctw/whichrepo/releases) 下载。
 
 只有参与源码开发时才需要 Go 和 Node.js。完整说明见 [安装文档](docs/install.md)。
+
+### 交给 AI 安装
+
+打开 [`AI_INSTALL.md`](AI_INSTALL.md)，替换提示词中的工作区路径，然后直接粘贴给 Codex、Claude Code、Cursor、OpenCode 或 Gemini CLI。AI 会使用带校验的官方安装器、初始化工作区、配置检测到的 MCP 客户端并验证工具调用，不会修改业务源码。
 
 ## 30 秒上手
 
@@ -101,6 +105,14 @@ WhichRepo 提供四个 MCP 工具：
 - `list_projects`
 - `workspace_status`
 
+自动配置本机检测到的客户端：
+
+```bash
+whichrepo setup auto --workspace /path/to/workspace
+```
+
+使用 `--dry-run` 可以先预览。修改 Cursor MCP 配置前会自动备份。
+
 Codex：
 
 ```bash
@@ -157,6 +169,17 @@ projects:
 
 个人或敏感 aliases 放进不提交的 `.whichrepo.local.yaml`。
 
+`whichrepo init` 会生成包含全部默认值的配置。可以随时检查最终生效配置：
+
+```bash
+whichrepo config show
+whichrepo config paths
+whichrepo config defaults
+whichrepo config validate
+```
+
+优先级为：内置默认值 → `.whichrepo.yaml` → `.whichrepo.local.yaml` → 环境变量 → CLI 参数。完整字段见 [配置文档](docs/configuration.md) 和 [JSON Schema](configs/whichrepo.schema.json)。
+
 ## 可选 Jev 判断
 
 默认使用本地检索。需要 Jev 二次判断时：
@@ -207,3 +230,5 @@ make build
 ```
 
 项目采用 MIT License。
+
+遇到问题可先查看 [FAQ](docs/faq.md)、[故障排查](docs/troubleshooting.md) 与 [基准方法](docs/benchmarks.md)。

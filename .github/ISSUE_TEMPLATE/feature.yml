@@ -1,0 +1,26 @@
+name: Feature request
+description: Propose a focused improvement to routing, setup, integrations, or documentation
+body:
+  - type: textarea
+    attributes:
+      label: Problem
+      description: What workflow is difficult today? Avoid private source, company names, and credentials.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposed outcome
+      description: Describe the user-visible result rather than prescribing an implementation.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Area
+      options: [Routing, Discovery and analyzers, Installation, MCP and agents, Dashboard, Documentation, Other]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Public example
+      description: Provide a generic example or public fixture when possible.
+

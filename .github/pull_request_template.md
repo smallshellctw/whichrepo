@@ -2,7 +2,7 @@
 
 ## Verification
 
-- [ ] `go test ./...`
-- [ ] `go vet ./...`
-- [ ] `npm run build` in `web/` when UI changes
+- [ ] `make test`
+- [ ] `make smoke`
+- [ ] Dashboard checked at desktop and mobile breakpoints when UI changes
 - [ ] No private source, credentials, or unreproducible benchmark claims

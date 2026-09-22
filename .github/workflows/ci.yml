@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.x"
+          go-version: "1.25.x"
           cache: true
       - run: go test ./...
       - run: go vet ./...
@@ -29,6 +29,20 @@ jobs:
         run: |
           make build
           ./scripts/smoke-binary.sh ./bin/whichrepo
+      - name: Standalone Windows binary smoke test
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          go build -o whichrepo-smoke.exe ./cmd/whichrepo
+          $root = Join-Path $env:RUNNER_TEMP "whichrepo-smoke"
+          $workspace = Join-Path $root "workspace"
+          New-Item -ItemType Directory -Force -Path (Join-Path $workspace "payment-api") | Out-Null
+          '{"name":"payment-api","version":"0.1.0"}' | Set-Content (Join-Path $workspace "payment-api/package.json")
+          $env:WHICHREPO_DB = Join-Path $root "index.db"
+          .\whichrepo-smoke.exe init $workspace | Out-Null
+          .\whichrepo-smoke.exe config validate --workspace $workspace | Out-Null
+          .\whichrepo-smoke.exe route --workspace $workspace "change payment API" | Out-Null
+          .\whichrepo-smoke.exe doctor --workspace $workspace | Out-Null
   web:
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.x"
+          go-version: "1.25.x"
       - name: Build release matrix
         shell: bash
         run: |

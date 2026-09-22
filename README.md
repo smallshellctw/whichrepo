@@ -10,7 +10,7 @@ Language-agnostic, local-first task routing for microservices, polyrepos, monore
 [![Release](https://img.shields.io/github/v/release/smallshellctw/whichrepo)](https://github.com/smallshellctw/whichrepo/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
 
-[30-second start](#30-second-start) · [Install](#install) · [Agents](#coding-agent-integration) · [Languages](#language-support) · [Privacy](#privacy) · [中文](README.zh-CN.md)
+[30-second start](#30-second-start) · [Install](#install) · [Install with AI](#install-with-an-ai-agent) · [Agents](#coding-agent-integration) · [Languages](#language-support) · [FAQ](docs/faq.md) · [中文](README.zh-CN.md)
 
 </div>
 
@@ -46,6 +46,10 @@ irm https://raw.githubusercontent.com/smallshellctw/whichrepo/main/scripts/insta
 The installers download the matching release asset and verify its SHA-256 checksum. No language runtime is installed or required. You can also download a binary directly from [GitHub Releases](https://github.com/smallshellctw/whichrepo/releases) or run the GHCR image.
 
 Developers building from source can use `make build`; end users do not need Go. See the complete [installation guide](docs/install.md).
+
+### Install with an AI agent
+
+Open [`AI_INSTALL.md`](AI_INSTALL.md), replace the workspace path in its prompt, and paste it into Codex, Claude Code, Cursor, OpenCode, or Gemini CLI. The agent uses the checksum-verifying installer, initializes the workspace, configures detected MCP clients, and verifies tool calls without editing source code.
 
 ## 30-second start
 
@@ -94,11 +98,19 @@ The SQLite index lives in the OS cache directory and is managed automatically. T
 | PHP | `composer.json` | Composer packages + namespaces | Tree-sitter |
 | Ruby | `Gemfile`, gemspec | gems + `require` | Tree-sitter |
 
-Tree-sitter runs through a pure-Go runtime, so release binaries remain static and cross-platform with `CGO_ENABLED=0`. Unsupported files still participate in local text retrieval. See [language support](docs/languages.md) and the [analyzer extension contract](docs/analyzers.md).
+Tree-sitter runs through a pure-Go runtime, so release binaries remain static and cross-platform with `CGO_ENABLED=0`. Indexed source extensions without syntax support still participate in local text retrieval. See [language support](docs/languages.md) and the [analyzer extension contract](docs/analyzers.md).
 
 ## Coding-agent integration
 
 MCP tools: `route_task`, `refresh_index`, `list_projects`, and `workspace_status`.
+
+Automatically configure every detected supported client:
+
+```bash
+whichrepo setup auto --workspace /path/to/workspace
+```
+
+Preview changes first with `--dry-run`. Cursor configuration is backed up before modification.
 
 Codex:
 
@@ -156,6 +168,17 @@ projects:
 
 Keep personal or private aliases in `.whichrepo.local.yaml`, which should remain untracked.
 
+`whichrepo init` writes all optional settings with defaults. Inspect the merged result and its sources with:
+
+```bash
+whichrepo config show
+whichrepo config paths
+whichrepo config defaults
+whichrepo config validate
+```
+
+Configuration precedence is defaults → `.whichrepo.yaml` → `.whichrepo.local.yaml` → environment variables → CLI flags. See the complete [configuration reference](docs/configuration.md) and its editor-friendly [JSON Schema](configs/whichrepo.schema.json).
+
 | Environment variable | Purpose |
 | --- | --- |
 | `WHICHREPO_WORKSPACE` | Workspace root |
@@ -164,6 +187,7 @@ Keep personal or private aliases in `.whichrepo.local.yaml`, which should remain
 | `WHICHREPO_PROVIDER` | `local`, `jev-vercel`, `jev-typesafe`, or `jev-openrouter` |
 | `WHICHREPO_PROVIDER_URL` | Override the provider endpoint |
 | `WHICHREPO_MODEL` | Override the provider model |
+| `WHICHREPO_PROVIDER_TIMEOUT` | Override the provider HTTP timeout |
 
 ## Optional Jev routing
 
@@ -192,7 +216,7 @@ whichrepo eval --workspace ./examples/polyrepo \
   --dataset benchmarks/starter.jsonl
 ```
 
-Current 100-task local baseline: **79% Top-1, 95% Top-3**. The benchmark and every fixture are public and run without a model API.
+Current 100-task local baseline: **79% Top-1, 95% Top-3**. The benchmark and every fixture are public and run without a model API. See the [methodology and limits](docs/benchmarks.md).
 
 ## Privacy
 
@@ -213,7 +237,7 @@ make web
 make build
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [ROADMAP.md](ROADMAP.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md), [good first contributions](docs/good-first-issues.md), [troubleshooting](docs/troubleshooting.md), [CHANGELOG.md](CHANGELOG.md), and [ROADMAP.md](ROADMAP.md).
 
 ## License
 

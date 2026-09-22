@@ -9,6 +9,7 @@ import "@fontsource/jetbrains-mono/latin-500.css";
 import "@fontsource/jetbrains-mono/latin-600.css";
 import { App } from "./App.jsx";
 import "./styles.css";
+import "./usability.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
