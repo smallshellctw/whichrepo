@@ -29,6 +29,17 @@ env -i \
   HOME="$test_root/home" \
   PATH="$test_root/bin:/usr/bin:/bin" \
   WHICHREPO_DB="$test_root/index.db" \
+  "$test_root/bin/whichrepo" config validate --workspace "$test_root/workspace" >/dev/null
+
+env -i \
+  HOME="$test_root/home" \
+  PATH="$test_root/bin:/usr/bin:/bin" \
+  "$test_root/bin/whichrepo" setup cursor --scope project --dry-run --workspace "$test_root/workspace" >/dev/null
+
+env -i \
+  HOME="$test_root/home" \
+  PATH="$test_root/bin:/usr/bin:/bin" \
+  WHICHREPO_DB="$test_root/index.db" \
   "$test_root/bin/whichrepo" route --workspace "$test_root/workspace" "change payment API" >/dev/null
 
 doctor_output="$(env -i \

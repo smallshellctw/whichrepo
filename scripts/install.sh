@@ -27,3 +27,11 @@ tar -xzf "$tmp/$archive" -C "$tmp"
 mkdir -p "$install_dir"
 install -m 0755 "$tmp/whichrepo" "$install_dir/whichrepo"
 echo "Installed whichrepo to $install_dir/whichrepo"
+"$install_dir/whichrepo" --version
+case ":$PATH:" in
+  *":$install_dir:"*) ;;
+  *) echo "Add $install_dir to PATH before using 'whichrepo' from any directory." ;;
+esac
+echo "Next: whichrepo init /path/to/your/workspace"
+echo "Agent setup: whichrepo setup auto --workspace /path/to/your/workspace"
+echo "AI-assisted setup: https://github.com/$repo/blob/main/AI_INSTALL.md"

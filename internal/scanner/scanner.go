@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	maxFilesPerProject = 800
-	maxBytesPerFile    = 12 * 1024
-	maxBytesPerProject = 4 * 1024 * 1024
+	defaultMaxFilesPerProject = 800
+	defaultMaxBytesPerFile    = 12 * 1024
+	defaultMaxBytesPerProject = 4 * 1024 * 1024
 )
 
 var ignoredDirs = map[string]struct{}{
@@ -121,7 +121,7 @@ func (s Scanner) discoverProjects() ([]string, error) {
 			rel, _ := filepath.Rel(root, path)
 			rel = filepath.ToSlash(rel)
 			if entry.IsDir() {
-				if strings.HasPrefix(entry.Name(), ".") || isIgnoredDir(entry.Name()) || excluded(rel, s.Config.Workspace.Exclude) {
+				if strings.HasPrefix(entry.Name(), ".") || s.isIgnoredDir(entry.Name()) || excluded(rel, s.Config.Workspace.Exclude) {
 					return filepath.SkipDir
 				}
 				if strings.Count(rel, "/") > 4 {
@@ -149,7 +149,7 @@ func (s Scanner) discoverProjects() ([]string, error) {
 				return filepath.SkipDir
 			}
 			if path != root {
-				if isIgnoredDir(entry.Name()) || excluded(filepath.ToSlash(rel), s.Config.Workspace.Exclude) {
+				if s.isIgnoredDir(entry.Name()) || excluded(filepath.ToSlash(rel), s.Config.Workspace.Exclude) {
 					return filepath.SkipDir
 				}
 				if included(filepath.ToSlash(rel), s.Config.Workspace.Include) && hasManifest(path) {
@@ -163,9 +163,21 @@ func (s Scanner) discoverProjects() ([]string, error) {
 }
 
 func (s Scanner) scanProject(name, path string, override config.ProjectOverride, registry analyzer.Registry) (model.Project, error) {
-	files := projectFiles(path)
-	if len(files) > maxFilesPerProject {
-		files = files[:maxFilesPerProject]
+	files := s.projectFiles(path)
+	maxFiles := s.Config.Index.MaxFilesPerProject
+	if maxFiles <= 0 {
+		maxFiles = defaultMaxFilesPerProject
+	}
+	maxFileBytes := s.Config.Index.MaxBytesPerFile
+	if maxFileBytes <= 0 {
+		maxFileBytes = defaultMaxBytesPerFile
+	}
+	maxProjectBytes := s.Config.Index.MaxBytesPerProject
+	if maxProjectBytes <= 0 {
+		maxProjectBytes = defaultMaxBytesPerProject
+	}
+	if len(files) > maxFiles {
+		files = files[:maxFiles]
 	}
 	var builder strings.Builder
 	var totalBytes int
@@ -174,11 +186,11 @@ func (s Scanner) scanProject(name, path string, override config.ProjectOverride,
 	identifiers := []string{}
 	rawDependencies := []string{}
 	for _, relativePath := range files {
-		if totalBytes >= maxBytesPerProject || !shouldIndex(relativePath) {
+		if int64(totalBytes) >= maxProjectBytes || !s.shouldIndex(relativePath) {
 			continue
 		}
 		filePath := filepath.Join(path, relativePath)
-		data, err := readPrefix(filePath, maxBytesPerFile)
+		data, err := readPrefix(filePath, maxFileBytes)
 		if err != nil || !utf8.Valid(data) {
 			continue
 		}
@@ -222,7 +234,7 @@ func (s Scanner) scanProject(name, path string, override config.ProjectOverride,
 	}, nil
 }
 
-func projectFiles(path string) []string {
+func (s Scanner) projectFiles(path string) []string {
 	if git, err := exec.LookPath("git"); err == nil {
 		command := exec.Command(git, "-C", path, "ls-files", "--cached", "--others", "--exclude-standard", "-z")
 		if output, err := command.Output(); err == nil {
@@ -244,7 +256,7 @@ func projectFiles(path string) []string {
 		}
 		if entry.IsDir() {
 			if filePath != path {
-				if _, ignored := ignoredDirs[entry.Name()]; ignored {
+				if s.isIgnoredDir(entry.Name()) {
 					return filepath.SkipDir
 				}
 			}
@@ -304,11 +316,16 @@ func hasWorkspaceMarker(path string) bool {
 	return false
 }
 
-func shouldIndex(relativePath string) bool {
+func (s Scanner) shouldIndex(relativePath string) bool {
 	name := filepath.Base(relativePath)
 	lowerName := strings.ToLower(name)
 	if _, sensitive := sensitiveNames[lowerName]; sensitive || strings.HasPrefix(lowerName, ".env.") || strings.HasSuffix(lowerName, ".pem") || strings.HasSuffix(lowerName, ".key") {
 		return false
+	}
+	for _, pattern := range s.Config.Privacy.AdditionalSensitiveFiles {
+		if matched, _ := filepath.Match(strings.ToLower(pattern), lowerName); matched {
+			return false
+		}
 	}
 	if strings.HasSuffix(name, "_gen.go") || name == "wire_gen.go" || strings.HasSuffix(name, ".min.js") ||
 		name == "go.sum" || strings.HasPrefix(lowerName, ".golangci") || strings.Contains(lowerName, "package-lock") {
@@ -318,7 +335,20 @@ func shouldIndex(relativePath string) bool {
 		return true
 	}
 	_, ok := indexedExtensions[strings.ToLower(filepath.Ext(name))]
-	return ok
+	if ok {
+		return true
+	}
+	ext := strings.ToLower(filepath.Ext(name))
+	for _, configured := range s.Config.Index.ExtraExtensions {
+		configured = strings.ToLower(strings.TrimSpace(configured))
+		if configured != "" && !strings.HasPrefix(configured, ".") {
+			configured = "." + configured
+		}
+		if ext == configured {
+			return true
+		}
+	}
+	return false
 }
 
 func resolveDependencies(projects []model.Project) {
@@ -426,9 +456,17 @@ func included(name string, includes []string) bool {
 	}
 	return false
 }
-func isIgnoredDir(name string) bool {
+func (s Scanner) isIgnoredDir(name string) bool {
 	_, ignored := ignoredDirs[name]
-	return ignored
+	if ignored {
+		return true
+	}
+	for _, pattern := range s.Config.Privacy.AdditionalExcludeDirs {
+		if matched, _ := filepath.Match(pattern, name); matched {
+			return true
+		}
+	}
+	return false
 }
 func sortedKeys(values map[string]struct{}) []string {
 	result := make([]string, 0, len(values))

@@ -1,9 +1,28 @@
 version: 1
 workspace:
   name: commerce-platform
+  include: []
   exclude:
     - archive-*
     - tmp-*
+index:
+  database: ""
+  max_files_per_project: 800
+  max_bytes_per_file: 12288
+  max_bytes_per_project: 4194304
+  extra_extensions: []
+routing:
+  top_k: 8
+  provider: local
+  model: ""
+  provider_url: ""
+  provider_timeout: 20s
+dashboard:
+  listen: 127.0.0.1:8787
+  open: false
+privacy:
+  additional_exclude_dirs: []
+  additional_sensitive_files: []
 projects:
   payments-api:
     path: services/payments-api

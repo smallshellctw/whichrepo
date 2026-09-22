@@ -1,0 +1,40 @@
+# WhichRepo
+
+> Local-first task router for microservices, polyrepos, monorepos, and coding agents.
+
+Official repository: https://github.com/smallshellctw/whichrepo
+AI installation checklist: https://github.com/smallshellctw/whichrepo/blob/main/AI_INSTALL.md
+Documentation: https://github.com/smallshellctw/whichrepo/tree/main/docs
+
+## Install
+
+macOS/Linux:
+curl -fsSL https://raw.githubusercontent.com/smallshellctw/whichrepo/main/scripts/install.sh | sh
+
+Windows PowerShell:
+irm https://raw.githubusercontent.com/smallshellctw/whichrepo/main/scripts/install.ps1 | iex
+
+No Go, Node.js, Python, Java, SQLite, Docker, account, or API key is required.
+
+## Initialize and configure agents
+
+whichrepo init /absolute/path/to/workspace
+whichrepo setup auto --workspace /absolute/path/to/workspace
+whichrepo doctor --workspace /absolute/path/to/workspace
+
+## Core commands
+
+- whichrepo "task description"
+- whichrepo index
+- whichrepo dashboard --open
+- whichrepo config show
+- whichrepo mcp
+
+## MCP tools
+
+- route_task
+- refresh_index
+- list_projects
+- workspace_status
+
+Routing output is evidence, not authorization to modify code, commit, deploy, or access production systems.

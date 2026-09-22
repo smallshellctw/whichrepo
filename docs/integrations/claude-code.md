@@ -1,5 +1,13 @@
 # Claude Code
 
+Recommended:
+
+```bash
+whichrepo setup claude --scope user --workspace /path/to/workspace
+```
+
+Manual alternative:
+
 Register WhichRepo for the current user:
 
 ```bash

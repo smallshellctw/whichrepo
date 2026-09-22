@@ -19,4 +19,9 @@ try {
   New-Item -ItemType Directory -Force -Path $installDir | Out-Null
   Copy-Item (Join-Path $temp "whichrepo.exe") (Join-Path $installDir "whichrepo.exe") -Force
   Write-Host "Installed whichrepo to $(Join-Path $installDir 'whichrepo.exe')"
+  & (Join-Path $installDir "whichrepo.exe") --version
+  Write-Host "Add $installDir to PATH if the 'whichrepo' command is not found."
+  Write-Host "Next: whichrepo init C:\path\to\your\workspace"
+  Write-Host "Agent setup: whichrepo setup auto --workspace C:\path\to\your\workspace"
+  Write-Host "AI-assisted setup: https://github.com/$repo/blob/main/AI_INSTALL.md"
 } finally { Remove-Item $temp -Recurse -Force -ErrorAction SilentlyContinue }

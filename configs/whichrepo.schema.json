@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/smallshellctw/whichrepo/main/configs/whichrepo.schema.json",
+  "title": "WhichRepo workspace configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "workspace"],
+  "properties": {
+    "version": { "type": "integer", "const": 1, "default": 1 },
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "description": "Human-readable workspace name." },
+        "include": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "exclude": { "type": "array", "items": { "type": "string" }, "default": ["archive-*", "tmp-*"] }
+      }
+    },
+    "index": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "database": { "type": "string", "default": "", "description": "SQLite path. Empty uses the OS cache directory." },
+        "max_files_per_project": { "type": "integer", "minimum": 1, "default": 800 },
+        "max_bytes_per_file": { "type": "integer", "minimum": 1, "default": 12288 },
+        "max_bytes_per_project": { "type": "integer", "minimum": 1, "default": 4194304 },
+        "extra_extensions": { "type": "array", "items": { "type": "string", "pattern": "^\\.?[A-Za-z0-9_+-]+$" }, "default": [] }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "top_k": { "type": "integer", "minimum": 1, "maximum": 20, "default": 8 },
+        "provider": { "type": "string", "enum": ["local", "jev-vercel", "jev-typesafe", "jev-openrouter"], "default": "local" },
+        "model": { "type": "string", "default": "" },
+        "provider_url": { "type": "string", "default": "" },
+        "provider_timeout": { "type": "string", "pattern": "^[0-9]+(ms|s|m)$", "default": "20s" }
+      }
+    },
+    "dashboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "listen": { "type": "string", "default": "127.0.0.1:8787" },
+        "open": { "type": "boolean", "default": false }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "additional_exclude_dirs": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "additional_sensitive_files": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    },
+    "projects": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "description": { "type": "string" },
+          "aliases": { "type": "array", "items": { "type": "string" }, "default": [] }
+        }
+      }
+    }
+  }
+}
